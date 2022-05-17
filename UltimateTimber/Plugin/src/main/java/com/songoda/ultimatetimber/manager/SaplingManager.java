@@ -17,7 +17,7 @@ import java.util.Set;
 
 public class SaplingManager extends Manager {
 
-    private Random random;
+    private final Random random;
     private Set<Location> protectedSaplings;
 
     public SaplingManager(UltimateTimber ultimateTimber) {

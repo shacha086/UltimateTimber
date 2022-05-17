@@ -496,11 +496,12 @@ global-required-tools:
 # Require the custom axe
 # Applies to all tree types
 global-required-axe: false
-
+# Support for multiple axes
+multiple-required-axe: false
 # Axe item
 required-axe:
-  type: DIAMOND_AXE
-  name: '&aAn Epic Axe'
+  type: WOODEN_AXE
+  name: '&aJungle Axe'
   lore:
     - "&7This axe... it's awesome."
     - "&7It can chop down trees real fast."
@@ -508,7 +509,51 @@ required-axe:
     - 'DURABILITY:3'
     - 'DIG_SPEED:5'
   # NBT to identify the axe by.
-  nbt: 'ultimatetimber_axe'
+  nbt: 'jungle_axe'
+  # Override global cooldown.
+  override-tree-topple-cooldown: false
+  # The amount of seconds a player has to wait before they can chop a tree again
+  # Does nothing if override-tree-topple-cooldown is false.
+  # The time is in seconds and must be a positive whole number
+  # Default: 5
+  axe-tree-topple-cooldown-length: 5
+
+required-axe-list:
+  - type: WOODEN_AXE
+    name: '&aJungle Axe'
+    lore:
+      - "&7This axe... it's awesome."
+      - "&7It can chop down trees real fast."
+    enchants:
+      - 'DURABILITY:3'
+      - 'DIG_SPEED:5'
+    # NBT to identify the axe by.
+    nbt: 'jungle_axe'
+    # Override global cooldown.
+    override-tree-topple-cooldown: false
+    # The amount of seconds a player has to wait before they can chop a tree again
+    # Does nothing if override-tree-topple-cooldown is false.
+    # The time is in seconds and must be a positive whole number
+    # Default: 5
+    axe-tree-topple-cooldown-length: 5
+  - type: GOLDEN_AXE
+    name: '&aTreecapitator'
+    lore:
+      - "&7This axe... it's awesome."
+      - "&7It can chop down trees real fast."
+    enchants:
+      - 'DURABILITY:3'
+      - 'DIG_SPEED:5'
+    # NBT to identify the axe by.
+    nbt: 'treecapitator'
+    # Override global cooldown.
+    override-tree-topple-cooldown: true
+    # The amount of seconds a player has to wait before they can chop a tree again
+    # Does nothing if override-tree-topple-cooldown is false.
+    # The time is in seconds and must be a positive whole number
+    # Default: 5
+    axe-tree-topple-cooldown-length:
+      5
 
 # If a tree lands on these blocks they will be destroyed.
 fragile-blocks:

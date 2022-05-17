@@ -49,7 +49,7 @@ public class ConfigurationManager extends Manager {
         SCATTER_TREE_BLOCKS_ON_GROUND(SettingType.BOOLEAN),
         FRAGILE_BLOCKS(SettingType.STRING_LIST);
 
-        private SettingType settingType;
+        private final SettingType settingType;
         private Object value = null;
 
         Setting(SettingType settingType) {

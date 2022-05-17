@@ -38,15 +38,17 @@ public class CommandGiveAxe extends AbstractCommand {
             }
         }
 
-        ItemStack axe = plugin.getTreeDefinitionManager().getRequiredAxe();
+        List<ItemStack> axe = plugin.getTreeDefinitionManager().getRequiredAxe();
 
-        if (axe == null) {
+        if (axe == null || axe.size() == 0) {
             plugin.getLocale().getMessageOrDefault("command.give.no-axe", "&cThe axe could not be loaded.")
                     .sendPrefixedMessage(sender);
             return ReturnType.FAILURE;
         }
 
-        player.getInventory().addItem(axe);
+        for (ItemStack it : axe) {
+            player.getInventory().addItem(it);
+        }
         plugin.getLocale().getMessageOrDefault("command.give.given", "&fAxe given to &a%player%")
                 .processPlaceholder("player", player.getName())
                 .sendPrefixedMessage(sender);
