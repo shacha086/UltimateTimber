@@ -131,7 +131,7 @@ public class TreeFallManager extends Manager implements Listener {
 
         detectedTree.getDetectedTreeBlocks().sortAndLimit(maxLogBlocksAllowed);
 
-        choppingManager.cooldownPlayer(player);
+        choppingManager.cooldownPlayer(player, tool);
 
         // Destroy initiated block if enabled
         if (ConfigurationManager.Setting.DESTROY_INITIATED_BLOCK.getBoolean()) {

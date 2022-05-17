@@ -1,8 +1,10 @@
 package com.songoda.ultimatetimber.manager;
 
+import com.songoda.core.compatibility.CompatibleHand;
 import com.songoda.ultimatetimber.UltimateTimber;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,6 +18,7 @@ public class ChoppingManager extends Manager {
     private final Map<UUID, Boolean> cooldownedPlayers;
     private boolean useCooldown;
     private int cooldownAmount;
+
 
     public ChoppingManager(UltimateTimber ultimateTimber) {
         super(ultimateTimber);
@@ -65,15 +68,28 @@ public class ChoppingManager extends Manager {
      * Sets a player into cooldown
      *
      * @param player The player to cooldown
+     * @param tool
      */
-    public void cooldownPlayer(Player player) {
+    public void cooldownPlayer(Player player, ItemStack tool) {
         if (!this.useCooldown || player.hasPermission("ultimatetimber.bypasscooldown"))
             return;
 
+        TreeDefinitionManager treeDefinitionManager = UltimateTimber.getInstance().getTreeDefinitionManager();
+
         this.cooldownedPlayers.put(player.getUniqueId(), false);
 
+        int cooldownAmount = -1;
+
+        if (treeDefinitionManager.isOverrideTreeToppleCooldown(tool)) {
+            cooldownAmount = treeDefinitionManager.getAxeTreeToppleCooldown(tool);
+        }
+
+        if (cooldownAmount < 0) {
+            cooldownAmount = this.cooldownAmount;
+        }
+
         Bukkit.getScheduler().scheduleSyncDelayedTask(UltimateTimber.getInstance(), () ->
-                this.cooldownedPlayers.remove(player.getUniqueId()), this.cooldownAmount * 20L);
+                this.cooldownedPlayers.remove(player.getUniqueId()), cooldownAmount * 20L);
     }
 
     /**

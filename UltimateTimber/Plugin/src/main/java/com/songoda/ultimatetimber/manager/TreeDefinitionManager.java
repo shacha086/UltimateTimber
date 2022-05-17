@@ -33,6 +33,8 @@ public class TreeDefinitionManager extends Manager {
     private final Set<CompatibleMaterial> globalPlantableSoil;
     private final Set<TreeLoot> globalLogLoot, globalLeafLoot, globalEntireTreeLoot;
     private final Set<ItemStack> globalRequiredTools;
+    private final Map<ItemStack, Boolean> isOverrideTreeToppleCooldown;
+    private final Map<ItemStack, Integer> axeTreeToppleCooldown;
 
     private boolean globalAxeRequired;
     private boolean multipleAxe;
@@ -48,6 +50,8 @@ public class TreeDefinitionManager extends Manager {
         this.globalLeafLoot = new HashSet<>();
         this.globalEntireTreeLoot = new HashSet<>();
         this.globalRequiredTools = new HashSet<>();
+        this.isOverrideTreeToppleCooldown = new HashMap<>();
+        this.axeTreeToppleCooldown = new HashMap<>();
     }
 
     @Override
@@ -58,6 +62,8 @@ public class TreeDefinitionManager extends Manager {
         this.globalLeafLoot.clear();
         this.globalEntireTreeLoot.clear();
         this.globalRequiredTools.clear();
+        this.isOverrideTreeToppleCooldown.clear();
+        this.axeTreeToppleCooldown.clear();
 
         ConfigurationManager configurationManager = this.plugin.getConfigurationManager();
         YamlConfiguration config = configurationManager.getConfig();
@@ -240,6 +246,15 @@ public class TreeDefinitionManager extends Manager {
             item = nbtItem.getItem();
 
             items.add(item);
+
+            // Set override tree topple cooldown
+            Boolean isOverrideTreeToppleCooldown = (Boolean) _requiredAxe.get("override-tree-topple-cooldown");
+            this.isOverrideTreeToppleCooldown.put(item, Objects.requireNonNullElse(isOverrideTreeToppleCooldown, false));
+
+            // Set axe tree topple cooldown
+            if (isOverrideTreeToppleCooldown) {
+                this.axeTreeToppleCooldown.put(item, Objects.requireNonNullElse((Integer) _requiredAxe.get("axe-tree-topple-cooldown-length"), -1));
+            }
         }
 
         requiredAxe = items;
@@ -250,7 +265,6 @@ public class TreeDefinitionManager extends Manager {
         this.requiredAxeKey = new ArrayList<>();
         this.requiredAxeKey.add(config.getString("required-axe.nbt"));
         this.requiredAxe = new ArrayList<>();
-
         String typeString = config.getString("required-axe.type");
 
         if (Strings.isNullOrEmpty(typeString)) {
@@ -285,10 +299,12 @@ public class TreeDefinitionManager extends Manager {
             if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13)) {
                 NamespacedKey key = NamespacedKey.minecraft(arr[0].trim().toLowerCase());
                 enchantment = Enchantment.getByKey(key);
-
                 // Try to fall back to #getByName() if someone uses the old names.
-                if (enchantment == null) enchantment = Enchantment.getByName(arr[0].trim());
-            } else enchantment = Enchantment.getByName(arr[0].trim());
+                if (enchantment == null) {
+                    enchantment = Enchantment.getByName(arr[0].trim());
+                }
+            } else
+                enchantment = Enchantment.getByName(arr[0].trim());
 
             if (enchantment == null) {
                 plugin.getLogger().warning("Enchantment " + arr[0].trim() + " is invalid.");
@@ -304,8 +320,16 @@ public class TreeDefinitionManager extends Manager {
         NBTItem nbtItem = new NBTItem(item);
         nbtItem.setBoolean(requiredAxeKey.get(0), true);
         item = nbtItem.getItem();
-
         this.requiredAxe.add(item);
+
+        // Set override tree topple cooldown
+        Boolean isOverrideTreeToppleCooldown = config.getBoolean("required-axe.override-tree-topple-cooldown", false);
+        this.isOverrideTreeToppleCooldown.put(item, isOverrideTreeToppleCooldown);
+
+        // Set axe tree topple cooldown
+        if (isOverrideTreeToppleCooldown) {
+            this.axeTreeToppleCooldown.put(item, config.getInt("required-axe.axe-tree-topple-cooldown-length", -1));
+        }
     }
 
     private int parseInt(String str) {
@@ -327,6 +351,10 @@ public class TreeDefinitionManager extends Manager {
     public boolean isMultipleAxe() {
         return globalAxeRequired;
     }
+
+    public boolean isOverrideTreeToppleCooldown(ItemStack itemStack) { return isOverrideTreeToppleCooldown.get(itemStack); }
+
+    public int getAxeTreeToppleCooldown(ItemStack itemStack) { return axeTreeToppleCooldown.get(itemStack); }
 
     @Override
     public void disable() {
