@@ -4,12 +4,18 @@ import org.bukkit.block.Block;
 
 public class DetectedTree {
 
+    public enum Directions {
+        VERTICAL, HORIZONTAL
+    }
+
     private final TreeDefinition treeDefinition;
     private final TreeBlockSet<Block> detectedTreeBlocks;
+    private final Directions direction;
 
-    public DetectedTree(TreeDefinition treeDefinition, TreeBlockSet<Block> detectedTreeBlocks) {
+    public DetectedTree(TreeDefinition treeDefinition, TreeBlockSet<Block> detectedTreeBlocks, Directions direction) {
         this.treeDefinition = treeDefinition;
         this.detectedTreeBlocks = detectedTreeBlocks;
+        this.direction = direction;
     }
 
     /**
@@ -30,4 +36,12 @@ public class DetectedTree {
         return this.detectedTreeBlocks;
     }
 
+    /**
+     * Gets the tree arrangement direction
+     *
+     * @return A Directions enum
+     */
+    public Directions getDirection() {
+        return this.direction;
+    }
 }

@@ -8,15 +8,7 @@ import com.songoda.core.hooks.LogManager;
 import com.songoda.ultimatetimber.commands.CommandGiveAxe;
 import com.songoda.ultimatetimber.commands.CommandReload;
 import com.songoda.ultimatetimber.commands.CommandToggle;
-import com.songoda.ultimatetimber.manager.ChoppingManager;
-import com.songoda.ultimatetimber.manager.ConfigurationManager;
-import com.songoda.ultimatetimber.manager.Manager;
-import com.songoda.ultimatetimber.manager.PlacedBlockManager;
-import com.songoda.ultimatetimber.manager.SaplingManager;
-import com.songoda.ultimatetimber.manager.TreeAnimationManager;
-import com.songoda.ultimatetimber.manager.TreeDefinitionManager;
-import com.songoda.ultimatetimber.manager.TreeDetectionManager;
-import com.songoda.ultimatetimber.manager.TreeFallManager;
+import com.songoda.ultimatetimber.manager.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +28,7 @@ public class UltimateTimber extends SongodaPlugin {
     private TreeAnimationManager treeAnimationManager;
     private TreeDefinitionManager treeDefinitionManager;
     private TreeDetectionManager treeDetectionManager;
+    private HorizontalTreeDetectionManager horizontalTreeDetectionManager;
     private TreeFallManager treeFallManager;
 
     public static UltimateTimber getInstance() {
@@ -73,6 +66,7 @@ public class UltimateTimber extends SongodaPlugin {
         this.treeAnimationManager = this.registerManager(TreeAnimationManager.class);
         this.treeDefinitionManager = this.registerManager(TreeDefinitionManager.class);
         this.treeDetectionManager = this.registerManager(TreeDetectionManager.class);
+        this.horizontalTreeDetectionManager = this.registerManager(HorizontalTreeDetectionManager.class);
         this.treeFallManager = this.registerManager(TreeFallManager.class);
 
         this.reloadConfig();
@@ -186,6 +180,15 @@ public class UltimateTimber extends SongodaPlugin {
      */
     public TreeDetectionManager getTreeDetectionManager() {
         return this.treeDetectionManager;
+    }
+
+    /**
+     * Gets the tree detection manager
+     *
+     * @return The TreeDetectionManager instance
+     */
+    public HorizontalTreeDetectionManager getHorizontalTreeDetectionManager() {
+        return this.horizontalTreeDetectionManager;
     }
 
     /**

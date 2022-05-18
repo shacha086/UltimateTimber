@@ -61,7 +61,7 @@ destroy-initiated-block: false
 
 # Only detect logs above the initiated block
 # Default: true
-only-detect-logs-upwards: true
+only-detect-logs-upwards: false
 
 # Only topple trees while the player is doing something
 # Valid values: SNEAKING, NOT_SNEAKING, ALWAYS
@@ -176,6 +176,10 @@ tree-animation-type: FANCY
 # Does nothing if tree-animation-type is not FANCY or CRUMBLE
 # Default: false
 scatter-tree-blocks-on-ground: false
+
+# Detect horizontal woods.
+# Default: false
+detect-horizontal-woods: false
 
 # Tree configuration
 # Allows for extreme fine-tuning of tree detection and what are considered trees
@@ -517,6 +521,12 @@ required-axe:
   # The time is in seconds and must be a positive whole number
   # Default: 5
   axe-tree-topple-cooldown-length: 5
+  # Override global log limit.
+  override-max-logs-per-chop: false
+  # The max number of logs that can be broken at one time
+  # Does nothing if override-max-logs-per-chop is false.
+  # Default: 150
+  max-logs-per-chop: 150
 
 required-axe-list:
   - type: WOODEN_AXE
@@ -527,6 +537,11 @@ required-axe-list:
     enchants:
       - 'DURABILITY:3'
       - 'DIG_SPEED:5'
+    item-flags:
+      - 'HIDE_ENCHANTS'
+      - 'HIDE_ATTRIBUTES'
+      - 'HIDE_UNBREAKABLE'
+    unbreakable: true
     # NBT to identify the axe by.
     nbt: 'jungle_axe'
     # Override global cooldown.
@@ -536,6 +551,12 @@ required-axe-list:
     # The time is in seconds and must be a positive whole number
     # Default: 5
     axe-tree-topple-cooldown-length: 5
+    # Override global log limit.
+    override-max-logs-per-chop: false
+    # The max number of logs that can be broken at one time
+    # Does nothing if override-max-logs-per-chop is false.
+    # Default: 150
+    max-logs-per-chop: 150
   - type: GOLDEN_AXE
     name: '&aTreecapitator'
     lore:
@@ -544,6 +565,11 @@ required-axe-list:
     enchants:
       - 'DURABILITY:3'
       - 'DIG_SPEED:5'
+    item-flags:
+      - 'HIDE_ENCHANTS'
+      - 'HIDE_ATTRIBUTES'
+      - 'HIDE_UNBREAKABLE'
+    unbreakable: true
     # NBT to identify the axe by.
     nbt: 'treecapitator'
     # Override global cooldown.
@@ -554,6 +580,12 @@ required-axe-list:
     # Default: 5
     axe-tree-topple-cooldown-length:
       5
+    # Override global log limit.
+    override-max-logs-per-chop: false
+    # The max number of logs that can be broken at one time
+    # Does nothing if override-max-logs-per-chop is false.
+    # Default: 150
+    max-logs-per-chop: 150
 
 # If a tree lands on these blocks they will be destroyed.
 fragile-blocks:

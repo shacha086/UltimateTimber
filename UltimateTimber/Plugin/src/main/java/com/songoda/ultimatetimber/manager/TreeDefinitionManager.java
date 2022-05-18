@@ -14,12 +14,14 @@ import com.songoda.ultimatetimber.tree.TreeLoot;
 import com.songoda.ultimatetimber.utils.BlockUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -33,8 +35,10 @@ public class TreeDefinitionManager extends Manager {
     private final Set<CompatibleMaterial> globalPlantableSoil;
     private final Set<TreeLoot> globalLogLoot, globalLeafLoot, globalEntireTreeLoot;
     private final Set<ItemStack> globalRequiredTools;
-    private final Map<ItemStack, Boolean> isOverrideTreeToppleCooldown;
-    private final Map<ItemStack, Integer> axeTreeToppleCooldown;
+    private final Map<String, Boolean> isOverrideTreeToppleCooldown;
+    private final Map<String, Integer> axeTreeToppleCooldown;
+    private final Map<String, Boolean> isOverrideMaxLogsPerChop;
+    private final Map<String, Integer> axeMaxLogsPerChop;
 
     private boolean globalAxeRequired;
     private boolean multipleAxe;
@@ -52,6 +56,8 @@ public class TreeDefinitionManager extends Manager {
         this.globalRequiredTools = new HashSet<>();
         this.isOverrideTreeToppleCooldown = new HashMap<>();
         this.axeTreeToppleCooldown = new HashMap<>();
+        this.isOverrideMaxLogsPerChop = new HashMap<>();
+        this.axeMaxLogsPerChop = new HashMap<>();
     }
 
     @Override
@@ -64,6 +70,9 @@ public class TreeDefinitionManager extends Manager {
         this.globalRequiredTools.clear();
         this.isOverrideTreeToppleCooldown.clear();
         this.axeTreeToppleCooldown.clear();
+        this.isOverrideMaxLogsPerChop.clear();
+        this.axeMaxLogsPerChop.clear();
+
 
         ConfigurationManager configurationManager = this.plugin.getConfigurationManager();
         YamlConfiguration config = configurationManager.getConfig();
@@ -207,7 +216,6 @@ public class TreeDefinitionManager extends Manager {
             ItemStack item = material.getItem();
 
             // Add display name and lore
-
             String displayName = TextUtils.formatText((String) _requiredAxe.get("name"));
             List<String> lore = ((List<String>) _requiredAxe.get("lore")).stream().map(TextUtils::formatText).collect(Collectors.toList());
 
@@ -216,44 +224,72 @@ public class TreeDefinitionManager extends Manager {
             meta.setLore(lore);
 
             // Enchants
-            for (String enchantString : (List<String>) _requiredAxe.get("enchants")) {
-                String[] arr = enchantString.split(":");
-                int level = arr.length > 1 ? Math.max(1, parseInt(arr[1])) : 1;
+            if (_requiredAxe.get("enchants") != null) {
+                for (String enchantString : (List<String>) _requiredAxe.get("enchants")) {
+                    String[] arr = enchantString.split(":");
+                    int level = arr.length > 1 ? Math.max(1, parseInt(arr[1])) : 1;
 
-                // Enchantment#getKey is not present on versions below 1.13
-                Enchantment enchantment;
-                if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13)) {
-                    NamespacedKey key = NamespacedKey.minecraft(arr[0].trim().toLowerCase());
-                    enchantment = Enchantment.getByKey(key);
+                    // Enchantment#getKey is not present on versions below 1.13
+                    Enchantment enchantment;
+                    if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13)) {
+                        NamespacedKey key = NamespacedKey.minecraft(arr[0].trim().toLowerCase());
+                        enchantment = Enchantment.getByKey(key);
 
-                    // Try to fall back to #getByName() if someone uses the old names.
-                    if (enchantment == null) enchantment = Enchantment.getByName(arr[0].trim());
-                } else enchantment = Enchantment.getByName(arr[0].trim());
+                        // Try to fall back to #getByName() if someone uses the old names.
+                        if (enchantment == null) enchantment = Enchantment.getByName(arr[0].trim());
+                    } else enchantment = Enchantment.getByName(arr[0].trim());
 
-                if (enchantment == null) {
-                    plugin.getLogger().warning("Enchantment " + arr[0].trim() + " is invalid.");
-                    continue;
+                    if (enchantment == null) {
+                        plugin.getLogger().warning("Enchantment " + arr[0].trim() + " is invalid.");
+                        continue;
+                    }
+
+                    meta.addEnchant(enchantment, level, true);
                 }
-
-                meta.addEnchant(enchantment, level, true);
             }
+
+            // Item flags
+            if (_requiredAxe.get("item-flags") != null) {
+                for (String itemFlagsString : (List<String>) _requiredAxe.get("item-flags")) {
+                    ItemFlag itemFlag;
+                    try {
+                        itemFlag = ItemFlag.valueOf(itemFlagsString);
+                    } catch (NullPointerException | IllegalArgumentException e) {
+                        plugin.getLogger().warning("ItemFlag " + itemFlagsString + " is invalid.");
+                        continue;
+                    }
+                    meta.addItemFlags(itemFlag);
+                }
+            }
+
+            // Unbreakable
+            meta.setUnbreakable(Objects.requireNonNullElse((Boolean) _requiredAxe.get("unbreakable"), false));
 
             item.setItemMeta(meta);
 
             // Apply NBT
             NBTItem nbtItem = new NBTItem(item);
-            nbtItem.setBoolean(requiredAxeKey.get(i), true);
+            nbtItem.setString("item", requiredAxeKey.get(i));
             item = nbtItem.getItem();
 
             items.add(item);
 
             // Set override tree topple cooldown
             Boolean isOverrideTreeToppleCooldown = (Boolean) _requiredAxe.get("override-tree-topple-cooldown");
-            this.isOverrideTreeToppleCooldown.put(item, Objects.requireNonNullElse(isOverrideTreeToppleCooldown, false));
+            this.isOverrideTreeToppleCooldown.put(requiredAxeKey.get(i), Objects.requireNonNullElse(isOverrideTreeToppleCooldown, false));
 
             // Set axe tree topple cooldown
             if (isOverrideTreeToppleCooldown) {
-                this.axeTreeToppleCooldown.put(item, Objects.requireNonNullElse((Integer) _requiredAxe.get("axe-tree-topple-cooldown-length"), -1));
+                this.axeTreeToppleCooldown.put(requiredAxeKey.get(i), Objects.requireNonNullElse((Integer) _requiredAxe.get("axe-tree-topple-cooldown-length"), -1));
+            }
+
+            // Set override max logs per chop
+            Boolean isOverrideMaxLogsPerChop = Objects.requireNonNullElse((Boolean) _requiredAxe.get("override-max-logs-per-chop"), false);
+            this.isOverrideMaxLogsPerChop.put(requiredAxeKey.get(i), Objects.requireNonNullElse(isOverrideMaxLogsPerChop, false));
+
+            // Set axe max logs per chop
+            if (isOverrideMaxLogsPerChop) {
+                this.axeMaxLogsPerChop.put(requiredAxeKey.get(i), Objects.requireNonNullElse((Integer) _requiredAxe.get("max-logs-per-chop"), -1));
             }
         }
 
@@ -314,21 +350,45 @@ public class TreeDefinitionManager extends Manager {
             meta.addEnchant(enchantment, level, true);
         }
 
+        // Item flags
+        for (String itemFlagsString: config.getStringList("required-axe.item-flags")) {
+            ItemFlag itemFlag;
+            try {
+                itemFlag = ItemFlag.valueOf(itemFlagsString);
+            } catch (NullPointerException | IllegalArgumentException e) {
+                plugin.getLogger().warning("ItemFlag " + itemFlagsString + " is invalid.");
+                continue;
+            }
+            meta.addItemFlags(itemFlag);
+        }
+
+        // Unbreakable
+        meta.setUnbreakable(config.getBoolean("required-axe.unbreakable", false));
+
         item.setItemMeta(meta);
 
         // Apply NBT
         NBTItem nbtItem = new NBTItem(item);
-        nbtItem.setBoolean(requiredAxeKey.get(0), true);
+        nbtItem.setString("item", requiredAxeKey.get(0));
         item = nbtItem.getItem();
         this.requiredAxe.add(item);
 
         // Set override tree topple cooldown
         Boolean isOverrideTreeToppleCooldown = config.getBoolean("required-axe.override-tree-topple-cooldown", false);
-        this.isOverrideTreeToppleCooldown.put(item, isOverrideTreeToppleCooldown);
+        this.isOverrideTreeToppleCooldown.put(requiredAxeKey.get(0), isOverrideTreeToppleCooldown);
 
         // Set axe tree topple cooldown
         if (isOverrideTreeToppleCooldown) {
-            this.axeTreeToppleCooldown.put(item, config.getInt("required-axe.axe-tree-topple-cooldown-length", -1));
+            this.axeTreeToppleCooldown.put(requiredAxeKey.get(0), config.getInt("required-axe.axe-tree-topple-cooldown-length", -1));
+        }
+
+        // Set override max logs per chop
+        Boolean isOverrideMaxLogsPerChop = config.getBoolean("override-max-logs-per-chop", false);
+        this.isOverrideMaxLogsPerChop.put(requiredAxeKey.get(0), isOverrideMaxLogsPerChop);
+
+        // Set axe max logs per chop
+        if (isOverrideMaxLogsPerChop) {
+            this.axeMaxLogsPerChop.put(requiredAxeKey.get(0), config.getInt("max-logs-per-chop", -1));
         }
     }
 
@@ -348,13 +408,33 @@ public class TreeDefinitionManager extends Manager {
         return globalAxeRequired;
     }
 
-    public boolean isMultipleAxe() {
-        return globalAxeRequired;
+    public boolean isOverrideTreeToppleCooldown(String nbt) {
+        if (nbt == null) {
+            return false;
+        }
+        return Objects.requireNonNullElse(isOverrideTreeToppleCooldown.get(nbt), false);
     }
 
-    public boolean isOverrideTreeToppleCooldown(ItemStack itemStack) { return isOverrideTreeToppleCooldown.get(itemStack); }
+    public int getAxeTreeToppleCooldown(String nbt) {
+        if (nbt == null) {
+            return -1;
+        }
+        return Objects.requireNonNullElse(axeTreeToppleCooldown.get(nbt), -1);
+    }
 
-    public int getAxeTreeToppleCooldown(ItemStack itemStack) { return axeTreeToppleCooldown.get(itemStack); }
+    public boolean isOverrideMaxLogsPerChop(String nbt) {
+        if (nbt == null) {
+            return false;
+        }
+        return Objects.requireNonNullElse(isOverrideMaxLogsPerChop.get(nbt), false);
+    }
+
+    public int getAxeMaxLogsPerChop(String nbt) {
+        if (nbt == null) {
+            return -1;
+        }
+        return Objects.requireNonNullElse(axeMaxLogsPerChop.get(nbt), -1);
+    }
 
     @Override
     public void disable() {
@@ -414,11 +494,12 @@ public class TreeDefinitionManager extends Manager {
      * @return True if the tool is allowed for toppling any trees
      */
     public boolean isToolValidForAnyTreeDefinition(ItemStack tool) {
+        if (tool == null || tool.getType() == Material.AIR) return false;
         if (ConfigurationManager.Setting.IGNORE_REQUIRED_TOOLS.getBoolean()) return true;
 
         for (TreeDefinition treeDefinition : this.treeDefinitions) {
             if (treeDefinition.isRequiredAxe() || isGlobalAxeRequired()) {
-                if (requiredAxeKey.stream().anyMatch(it -> new NBTItem(tool).hasKey(it))) return true;
+                if (requiredAxeKey.contains(new NBTItem(tool).getString("item"))) return true;
             }
         }
 
@@ -445,7 +526,7 @@ public class TreeDefinitionManager extends Manager {
 
         // If the tree definition requires the custom axe, don't allow any other checks to pass.
         if (treeDefinition.isRequiredAxe() || isGlobalAxeRequired()) {
-            return requiredAxeKey.stream().anyMatch(it -> new NBTItem(tool).hasKey(it));
+            if (requiredAxeKey.contains(new NBTItem(tool).getString("item"))) return true;
         }
 
         for (ItemStack requiredTool : treeDefinition.getRequiredTools())
