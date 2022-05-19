@@ -16,6 +16,7 @@ public class ConfigurationManager extends Manager {
         MAX_LOGS_PER_CHOP(SettingType.INT),
         DESTROY_LEAVES(SettingType.BOOLEAN),
         LEAVES_REQUIRED_FOR_TREE(SettingType.INT),
+        LOGS_REQUIRED_FOR_TREE(SettingType.INT),
         REALISTIC_TOOL_DAMAGE(SettingType.BOOLEAN),
         PROTECT_TOOL(SettingType.BOOLEAN),
         APPLY_SILK_TOUCH(SettingType.BOOLEAN),

@@ -68,7 +68,6 @@ public class TreeDetectionManager extends Manager {
      * @return A DetectedTree if one was found, otherwise null
      */
     public DetectedTree detectTree(Block initialBlock) {
-        TreeDefinitionManager treeDefinitionManager = this.plugin.getTreeDefinitionManager();
 
         TreeBlock initialTreeBlock = new TreeBlock(initialBlock, TreeBlockType.LOG);
         TreeBlockSet<Block> detectedTreeBlocks = new TreeBlockSet<>(initialTreeBlock);
@@ -128,7 +127,7 @@ public class TreeDetectionManager extends Manager {
                 Block blockBelow = block.getRelative(BlockFace.DOWN);
                 boolean blockBelowIsLog = this.isValidLogType(possibleTreeDefinitions, null, blockBelow);
                 boolean blockBelowIsSoil = false;
-                for (CompatibleMaterial material : treeDefinitionManager.getPlantableSoilMaterial(actualTreeDefinition)) {
+                for (CompatibleMaterial material : this.treeDefinitionManager.getPlantableSoilMaterial(actualTreeDefinition)) {
                     if (material.equals(CompatibleMaterial.getMaterial(blockBelow))) {
                         blockBelowIsSoil = true;
                         break;

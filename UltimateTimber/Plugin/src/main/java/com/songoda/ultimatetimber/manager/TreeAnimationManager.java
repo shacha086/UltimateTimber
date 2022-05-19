@@ -80,18 +80,10 @@ public class TreeAnimationManager extends Manager implements Listener, Runnable 
      */
     public void runAnimation(DetectedTree detectedTree, Player player) {
         switch (TreeAnimationType.fromString(ConfigurationManager.Setting.TREE_ANIMATION_TYPE.getString())) {
-            case FANCY:
-                this.registerTreeAnimation(new TreeAnimationFancy(detectedTree, player));
-                break;
-            case DISINTEGRATE:
-                this.registerTreeAnimation(new TreeAnimationDisintegrate(detectedTree, player));
-                break;
-            case CRUMBLE:
-                this.registerTreeAnimation(new TreeAnimationCrumble(detectedTree, player));
-                break;
-            case NONE:
-                this.registerTreeAnimation(new TreeAnimationNone(detectedTree, player));
-                break;
+            case FANCY -> this.registerTreeAnimation(new TreeAnimationFancy(detectedTree, player));
+            case DISINTEGRATE -> this.registerTreeAnimation(new TreeAnimationDisintegrate(detectedTree, player));
+            case CRUMBLE -> this.registerTreeAnimation(new TreeAnimationCrumble(detectedTree, player));
+            case NONE -> this.registerTreeAnimation(new TreeAnimationNone(detectedTree, player));
         }
     }
 

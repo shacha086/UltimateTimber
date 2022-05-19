@@ -27,6 +27,10 @@ max-logs-per-chop: 150
 # Default: 5
 leaves-required-for-tree: 5
 
+# The minimum number of logs required for something to be considered a tree
+# Default: 5
+logs-required-for-tree: 5
+
 # If leaves should be destroyed
 # Default: true
 destroy-leaves: true
