@@ -1,16 +1,12 @@
 package com.songoda.ultimatetimber.manager;
 
-import com.songoda.core.compatibility.CompatibleHand;
+import com.songoda.core.third_party.de.tr7zw.nbtapi.NBTItem;
 import com.songoda.ultimatetimber.UltimateTimber;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class ChoppingManager extends Manager {
 
@@ -68,7 +64,7 @@ public class ChoppingManager extends Manager {
      * Sets a player into cooldown
      *
      * @param player The player to cooldown
-     * @param tool
+     * @param tool The tool player using when cooldown
      */
     public void cooldownPlayer(Player player, ItemStack tool) {
         if (!this.useCooldown || player.hasPermission("ultimatetimber.bypasscooldown"))
@@ -80,8 +76,10 @@ public class ChoppingManager extends Manager {
 
         int cooldownAmount = -1;
 
-        if (treeDefinitionManager.isOverrideTreeToppleCooldown(tool)) {
-            cooldownAmount = treeDefinitionManager.getAxeTreeToppleCooldown(tool);
+        NBTItem nbtTool = new NBTItem(tool);
+
+        if (treeDefinitionManager.isOverrideTreeToppleCooldown(nbtTool.getString("item"))) {
+            cooldownAmount = treeDefinitionManager.getAxeTreeToppleCooldown(nbtTool.getString("item"));
         }
 
         if (cooldownAmount < 0) {

@@ -139,7 +139,7 @@ public class TreeDetectionManager extends Manager {
             }
         }
 
-        return new DetectedTree(actualTreeDefinition, detectedTreeBlocks);
+        return new DetectedTree(actualTreeDefinition, detectedTreeBlocks, DetectedTree.Directions.VERTICAL);
     }
 
     /**

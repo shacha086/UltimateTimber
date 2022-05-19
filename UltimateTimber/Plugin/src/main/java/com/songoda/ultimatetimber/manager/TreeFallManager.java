@@ -4,6 +4,7 @@ import com.songoda.core.compatibility.CompatibleHand;
 import com.songoda.core.hooks.JobsHook;
 import com.songoda.core.hooks.LogManager;
 import com.songoda.core.hooks.McMMOHook;
+import com.songoda.core.third_party.de.tr7zw.nbtapi.NBTItem;
 import com.songoda.core.utils.ItemUtils;
 import com.songoda.core.world.SItemStack;
 import com.songoda.ultimatetimber.UltimateTimber;
@@ -50,6 +51,7 @@ public class TreeFallManager extends Manager implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         TreeDefinitionManager treeDefinitionManager = this.plugin.getTreeDefinitionManager();
         TreeDetectionManager treeDetectionManager = this.plugin.getTreeDetectionManager();
+        HorizontalTreeDetectionManager horizontalTreeDetectionManager = this.plugin.getHorizontalTreeDetectionManager();
         TreeAnimationManager treeAnimationManager = this.plugin.getTreeAnimationManager();
         ChoppingManager choppingManager = this.plugin.getChoppingManager();
         SaplingManager saplingManager = this.plugin.getSaplingManager();
@@ -102,12 +104,17 @@ public class TreeFallManager extends Manager implements Listener {
             return;
 
         DetectedTree detectedTree = treeDetectionManager.detectTree(block);
+
+        if (detectedTree == null && ConfigurationManager.Setting.DETECT_HORIZONTAL_WOODS.getBoolean())
+            detectedTree = horizontalTreeDetectionManager.detectTree(block);
+
         if (detectedTree == null)
             return;
 
         if (alwaysReplantSapling) {
+            DetectedTree finalDetectedTree = detectedTree;
             Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () ->
-                    saplingManager.replantSapling(detectedTree.getTreeDefinition(), detectedTree.getDetectedTreeBlocks().getInitialLogBlock()));
+                    saplingManager.replantSapling(finalDetectedTree.getTreeDefinition(), finalDetectedTree.getDetectedTreeBlocks().getInitialLogBlock()));
 
             if (!isValid)
                 return;
@@ -120,14 +127,31 @@ public class TreeFallManager extends Manager implements Listener {
         if (!ConfigurationManager.Setting.PROTECT_TOOL.getBoolean() && !ItemUtils.hasEnoughDurability(tool, toolDamage))
             return;
 
-        // Trigger fall event
-        TreeFallEvent treeFallEvent = new TreeFallEvent(player, detectedTree);
-        Bukkit.getPluginManager().callEvent(treeFallEvent);
-        if (treeFallEvent.isCancelled())
-            return;
+        if (detectedTree.getDirection() == DetectedTree.Directions.VERTICAL) {
+            // Trigger fall event
+            TreeFallEvent treeFallEvent = new TreeFallEvent(player, detectedTree);
+            Bukkit.getPluginManager().callEvent(treeFallEvent);
+            if (treeFallEvent.isCancelled())
+                return;
+        } else {
+
+        }
 
         // Valid tree and meets all conditions past this point
         event.setCancelled(true);
+
+        // Limit log by tool if enabled
+        int maxLogBlocksAllowed = -1;
+
+        NBTItem nbtTool = new NBTItem(tool);
+
+        if (treeDefinitionManager.isOverrideMaxLogsPerChop(nbtTool.getString("item"))) {
+            maxLogBlocksAllowed = treeDefinitionManager.getAxeMaxLogsPerChop(nbtTool.getString("item"));
+        }
+
+        if (maxLogBlocksAllowed < 0) {
+            maxLogBlocksAllowed = this.maxLogBlocksAllowed;
+        }
 
         detectedTree.getDetectedTreeBlocks().sortAndLimit(maxLogBlocksAllowed);
 

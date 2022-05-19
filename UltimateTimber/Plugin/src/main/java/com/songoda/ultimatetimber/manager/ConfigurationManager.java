@@ -48,6 +48,7 @@ public class ConfigurationManager extends Manager {
         HOOKS_REQUIRE_ABILITY_ACTIVE(SettingType.BOOLEAN),
         TREE_ANIMATION_TYPE(SettingType.STRING),
         SCATTER_TREE_BLOCKS_ON_GROUND(SettingType.BOOLEAN),
+        DETECT_HORIZONTAL_WOODS(SettingType.BOOLEAN),
         FRAGILE_BLOCKS(SettingType.STRING_LIST);
 
         private final SettingType settingType;
