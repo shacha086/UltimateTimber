@@ -25,6 +25,12 @@ public class HorizontalTreeDetectionManager extends Manager {
         this.VALID_BRANCH_OFFSETS = new HashSet<>();
         this.VALID_TRUNK_OFFSETS = new HashSet<>();
 
+        // 3x2x3 centered around log, excluding -y axis
+        for (int y = 0; y <= 1; y++)
+            for (int x = -1; x <= 1; x++)
+                for (int z = -1; z <= 1; z++)
+                    this.VALID_BRANCH_OFFSETS.add(new Vector(x, y, z));
+
         // 3x3x3 centered around log
         for (int y = -1; y <= 1; y++)
             for (int x = -1; x <= 1; x++)
@@ -130,29 +136,6 @@ public class HorizontalTreeDetectionManager extends Manager {
         // Trees need at least a certain number of logs
         if (detectedTreeBlocks.getLogBlocks().size() < this.numLogsRequiredForTree)
             return null;
-
-        // Check that the tree isn't on the ground if enabled
-//        if (this.entireTreeBase) {
-//            Set<Block> groundBlocks = new HashSet<>();
-//            for (ITreeBlock<Block> treeBlock : detectedTreeBlocks.getLogBlocks())
-//                if (treeBlock != detectedTreeBlocks.getInitialLogBlock() && treeBlock.getLocation().getBlockY() == initialBlock.getLocation().getBlockY())
-//                    groundBlocks.add(treeBlock.getBlock());
-//
-//            for (Block block : groundBlocks) {
-//                Block blockBelow = block.getRelative(BlockFace.DOWN);
-//                boolean blockBelowIsLog = this.isValidLogType(possibleTreeDefinitions, null, blockBelow);
-//                boolean blockBelowIsSoil = false;
-//                for (CompatibleMaterial material : treeDefinitionManager.getPlantableSoilMaterial(actualTreeDefinition)) {
-//                    if (material.equals(CompatibleMaterial.getMaterial(blockBelow))) {
-//                        blockBelowIsSoil = true;
-//                        break;
-//                    }
-//                }
-//
-//                if (blockBelowIsLog || blockBelowIsSoil)
-//                    return null;
-//            }
-//        }
 
         return new DetectedTree(actualTreeDefinition, detectedTreeBlocks, DetectedTree.Directions.HORIZONTAL);
     }
